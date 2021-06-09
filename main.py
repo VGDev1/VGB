@@ -4,40 +4,15 @@ from serial.tools import list_ports
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk)
+import numpy as np
+from tkinter.ttk import *
+
 
 
 class GUI:
 
     def __init__(self) -> None:
         master = tk.Tk()
-    
-
-        def plot():
-    
-            # the figure that will contain the plot
-            fig = Figure(figsize = (5, 5),
-                        dpi = 100)
-        
-            # list of squares
-            y = [i**2 for i in range(101)]
-        
-            # adding the subplot
-            plot1 = fig.add_subplot(111)
-        
-            # plotting the graph
-            plot1.plot(y)
-        
-            # creating the Tkinter canvas
-            # containing the Matplotlib figure
-            canvas = FigureCanvasTkAgg(fig,
-                                    master = master)  
-            canvas.draw()
-        
-            # placing the canvas on the Tkinter window
-            canvas.get_tk_widget().grid(row=4, columnspan=10 ,sticky="nsew")
-        
-            #canvas.get_tk_widget().grid_columnconfigure(3, weight=1)
-            canvas.get_tk_widget().grid_rowconfigure(4, weight=1)
 
 
         tk.Label(master, text="Times").grid(row=0, columnspan=1)
@@ -116,9 +91,73 @@ class GUI:
         om.grid(row =3, column=5)
         om.config(width=7)
 
+        def getTimes(): 
+            return list(map(lambda e: int(e.get()), times))
+        def getTemps(): 
+            return list(map(lambda e: int(e.get()) , temps))
+        def getSpeeds(): 
+            return list(map(lambda e: int(e.get()), speeds))
+
+        def plot():
+    
+            # the figure that will contain the plot
+            fig1 = Figure(figsize = (5, 5),
+                        dpi = 100)
+            fig2 = Figure(figsize = (5, 5),
+                        dpi = 100)                        
+         
+            # adding the subplot
+            plt1 = fig1.add_subplot(111)
+            plt2 = fig2.add_subplot(111)
+            plt1.title.set_text('Temperatures')
+            plt2.title.set_text('Speeds')
+
+            x = getTimes()
+
+            lst = []
+            for v in x:
+                lst.append(v + sum(lst))
+            x = lst
+
+            print("printar x")
+            print(x)
+
+            plt1.plot(np.array(x), np.array(getTemps()))
+
+            plt2.plot(np.array(x), np.array(getSpeeds()), color="green")
+
+
+            canvas1 = FigureCanvasTkAgg(fig1,
+                                    master = master)  
+            canvas1.draw()
+
+            canvas2 = FigureCanvasTkAgg(fig2,
+                                    master = master)  
+            canvas2.draw()
+        
+            # placing the canvas on the Tkinter window
+            canvas1.get_tk_widget().grid(row=4, columnspan=5 ,sticky="nsew")
+            canvas1.get_tk_widget().grid_rowconfigure(4, weight=1)
+
+            canvas2.get_tk_widget().grid(row=4, column=5, columnspan=5 ,sticky="nsew")
+            canvas2.get_tk_widget().grid_rowconfigure(4, weight=1)
+
         tk.Button(master, text="Analyze", command=plot, width=8).grid(row =3, column=6)
 
-        tk.Button(master, text="Upload", command=clearFields, width=8).grid(row =3, column=7)
+        progress = Progressbar(master, orient = "horizontal",
+              length = 100, mode = 'determinate')
+        progress.grid(row =3, column=8)
+
+        def upload():
+            #Lite checks här så inget är tomt
+            #Ändra i .ino filen
+            #Compile
+            #Upload och en progressbar
+            #Complete popup
+            print("upload")
+
+        tk.Button(master, text="Upload", command=upload, width=8).grid(row =3, column=7)
+
 
         #plot()
         
