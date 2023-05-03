@@ -12,6 +12,8 @@ Adafruit_MAX31865 max = Adafruit_MAX31865(10, 11, 12, 13); // Defines what pin t
 #define PROG_BTN_PIN 16
 #define TRANSMIT_PIN 15
 
+#define slaveAddress 9
+
 // Relay
 int heater = 14; // Relay ch1 onA1 but acting like digital output
 
@@ -37,9 +39,6 @@ float minuteInMillis = 60000;
 // Stepper motor control
 int setSpeed;
 int currentSpeed = 0;
-
-// communication
-int slaveAddress = 9;
 
 // Time values
 int nbrOfSequences = seq;
@@ -69,6 +68,8 @@ void setup()
     Serial.begin(115200);
 
     max.begin(MAX31865_3WIRE);
+
+    Wire.begin(); // join i2c bus with address #9
 }
 
 void heaterLoop()
