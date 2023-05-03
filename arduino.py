@@ -24,7 +24,7 @@ def placeValuesInIno(times, temps, speeds):
         ts[i] = ts[i-1] + ts[i]
     # replace tms with the times, on format {time1, time2} from the times list, and so on. do for temps and speeds as well
     for line in fin:
-        fout.write(line.replace('tms', str(ts).replace('[', '{').replace(']', '}')).replace('tmps', str(temps).replace('[', '{').replace(']', '}')).replace('spds', str(speeds).replace('[', '{').replace(']', '}')))
+        fout.write(line.replace('tms', str(ts).replace('[', '{').replace(']', '}')).replace('tmps', str(temps).replace('[', '{').replace(']', '}')).replace('spds', str(speeds).replace('[', '{').replace(']', '}')).replace('seq', str(len(ts))))
     
     #close input and output files
     fin.close()
