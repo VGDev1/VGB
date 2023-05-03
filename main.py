@@ -8,6 +8,7 @@ import numpy as np
 from tkinter.ttk import *
 from tkinter import messagebox
 from arduino import *
+import time
 
 
 
@@ -19,7 +20,6 @@ class GUI:
 
         # set title of window to VG Break In System
         master.title("VG Break In System")
-
 
         tk.Label(master, text="Times").grid(row=0, columnspan=1)
 
@@ -96,6 +96,8 @@ class GUI:
                 setTextInput("", times[i])
                 setTextInput("", temps[i])
                 setTextInput("", speeds[i]) 
+            
+            removeGridEntrys()
 
         tk.Button(master, text="Load Profile", command=loadProfile).grid(row =3, column=2)
 
@@ -167,32 +169,24 @@ class GUI:
 
         tk.Button(master, text="Analyze", command=plot, width=8).grid(row =3, column=6)
 
-        progress = Progressbar(master, orient = "horizontal",
-              length = 100, mode = 'determinate')
-        progress.grid(row =3, column=8)
 
         def upload():
 
-            progress['value'] = 20
 
             allEntrys = times + speeds + temps
             if not list(filter(lambda e: len(e.get()) != 0, allEntrys)):
                 messagebox.showerror("showerror", "Error: Check values!")
-                progress['value'] = 0
                 return 
             # check that comport is selected
             if selectedComPort.get() == "":
                 messagebox.showerror("showerror", "Error: Select comport!")
-                progress['value'] = 0
                 return
-            progress['value'] = 30
             
             placeValuesInIno(times, temps, speeds)
-            progress['value'] = 40 
             compileCode(selectedComPort.get())
-            progress['value'] = 100
+            time.sleep(10)
+            # update progressbar to 100 over 20 seconds using timer
             messagebox.showinfo(title="Complete", message="Upload complete")
-            progress['value'] = 0
             return
 
         tk.Button(master, text="Upload", command=upload, width=8).grid(row =3, column=7)

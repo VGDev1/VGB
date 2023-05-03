@@ -1,14 +1,17 @@
 import os
+import subprocess
 
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 def placeValuesInIno(times, temps, speeds):
     #input file
     fin = open("VBISS/VBISS.ino", "rt")
     #remove old output file and create new one
     fout = open("VBISU/VBISU.ino", "wt")
-
-
-
 
     # extract times, temps and speeds from the list of tk.Entry objects
     times = list(map(lambda x: int(x.get()), times))
@@ -29,5 +32,10 @@ def placeValuesInIno(times, temps, speeds):
 
 def compileCode(port):
     print(port)
-    #execString = "arduino-cli upload -p " + port + " --fqbn arduino:avr:uno VBISU/VBISU.ino"
-    #print(os.system(execString))
+    # use arduino-cli to install #include <Adafruit_MAX31865.h> include <LiquidCrystal.h>  include <PID_v1.h> include <Wire.h>
+
+    subprocess.call(["arduino-cli", "lib", "install", "Adafruit BusIO"])
+    subprocess.call(["arduino-cli", "lib", "install", "LiquidCrystal"])
+    subprocess.call(["arduino-cli", "lib", "install", "PID"])
+    subprocess.call(["arduino-cli", "compile", "--fqbn", "arduino:avr:uno", "VBISU/VBISU.ino"])
+    subprocess.call(["arduino-cli", "upload", "-p", port, "--fqbn", "arduino:avr:uno", "VBISU/VBISU.ino"])
