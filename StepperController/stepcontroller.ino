@@ -9,12 +9,11 @@ AccelStepper stepper(1, 2, 3); // 1 = Easy Driver interface
                                // NANO Pin 2 connected to STEP pin of Easy Driver
                                // NANO Pin 3 connected to DIR pin of Easy Driver
 
-float maxSpeed = 3000;
-float targetSpeed = 0; // # of steps per second to speeed up to
+int maxSpeed = 3000;
+int targetSpeed = 0; // # of steps per second to speeed up to
 unsigned long time;
 unsigned long previousAccel = 0;
 int interval = 5; // # of milliseconds between speed increases
-float stepperSpeed;
 
 void setup()
 {
@@ -28,7 +27,8 @@ void loop()
 {
     if (digitalRead(RECIVE_PIN) == HIGH)
     {
-        targetSpeed = Wire.read();
+        int input = Wire.read();
+        targetSpeed = map(input, 0, 255, 0, maxSpeed);
     }
     while (stepper.speed() < targetSpeed)
     {
