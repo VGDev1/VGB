@@ -63,13 +63,13 @@ void setup()
     // turn the PID on
     myPID.SetMode(AUTOMATIC);
 
-    pinMode(TRANSMIT_PIN, OUTPUT);
+    lcd.begin(16, 2); 
 
-    Serial.begin(115200);
+    pinMode(TRANSMIT_PIN, OUTPUT);
 
     max.begin(MAX31865_3WIRE);
 
-    Wire.begin(); // join i2c bus with address #9
+    Wire.begin(); 
 }
 
 void heaterLoop()
@@ -92,7 +92,9 @@ void sendSpeed()
     {
         digitalWrite(TRANSMIT_PIN, HIGH);
         Wire.beginTransmission(slaveAddress); // transmit to device #9
-        Wire.write(setSpeed);                 // sends x
+        // map the speed to a value between 0 and 255
+        speed = map(setSpeed, 0, 3000, 0, 255);
+        Wire.write(speed);                 // sends x
         Wire.endTransmission();               // stop transmitting
         digitalWrite(TRANSMIT_PIN, LOW);
         currentSpeed = setSpeed;
@@ -126,31 +128,17 @@ void readTemp()
 
 void printInformation(minutesElapsed)
 {
-    // print progress as percentage (rounded to one decimal) elapsed/total
-    Serial.print("Progress: ");
-    Serial.print((minutesElapsed / times[nbrOfSequences]) * 100) .1f;
-    Serial.println("%");
-
-    // print target temperature
-    Serial.print("Target temperature: ");
-    Serial.print(Setpoint);
-    Serial.println("°C");
-
-    // print current temperature
-
-    Serial.print("Current temperature: ");
-    Serial.print(Input);
-    Serial.println("°C");
-
-    // print current speed
-    Serial.print("Current speed: ");
-    Serial.print(currentSpeed);
-    Serial.println("rpm");
-
-    // time left
-    Serial.print("Time left: ");
-    Serial.print(times[nbrOfSequences] - minutesElapsed);
-    Serial.println("min");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("S");
+    lcd.print((int) setSpeed);
+    lcd.print("C");
+    lcd.print((int) Input);
+    lcd.setCursor(0, 1);
+    lcd.print("T");
+    lcd.print((int) Setpoint);
+    lcd.print("P");
+    lcd.print((int) (minutesElapsed / times[nbrOfSequences]) * 100);
 }
 
 void loop()
@@ -175,7 +163,9 @@ void loop()
         while (true)
         {
             digitalWrite(heater, 0);
-            Serial.println("Finished");
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Finished");
             delay(1000);
         }
     }
