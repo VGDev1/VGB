@@ -18,18 +18,19 @@ int interval = 5; // # of milliseconds between speed increases
 void setup()
 {
     stepper.setMaxSpeed(3000);
-    pinMode(RECIVE_PIN, INPUT);
-
+    Serial.begin(9200);
     Wire.begin(slaveAddress);
+    Wire.onReceive(receiveEvent);
+}
+
+void receiveEvent(int bytes) {
+    int input = Wire.read();
+    targetSpeed = map(input, 0, 255, 0, maxSpeed);
+    Serial.println(targetSpeed);
 }
 
 void loop()
 {
-    if (digitalRead(RECIVE_PIN) == HIGH)
-    {
-        int input = Wire.read();
-        targetSpeed = map(input, 0, 255, 0, maxSpeed);
-    }
     while (stepper.speed() < targetSpeed)
     {
         time = millis();

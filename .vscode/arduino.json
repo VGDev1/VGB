@@ -1,5 +1,6 @@
 {
-    "port": "/dev/tty.Bluetooth-Incoming-Port",
+    "port": "/dev/tty.usbmodem141101",
     "board": "arduino:avr:uno",
-    "programmer": "arduino:avrisp"
+    "programmer": "arduino:avrisp",
+    "sketch": "stepcontoller/stepcontroller.ino"
 }
