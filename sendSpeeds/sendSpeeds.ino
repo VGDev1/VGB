@@ -32,6 +32,8 @@ void sendSpeed() {
 void loop()
 {
 
+    Serial.println("test");
+
     setSpeed = 3000;
     sendSpeed();
 }
