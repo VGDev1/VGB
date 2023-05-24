@@ -1,6 +1,6 @@
 # Controller software for the VG-Break-In system
 
-![Screenshot](assets/view.png)
+![GUI](assets/gui.png)
 
 ## Requirements
 - Arduino CLI
@@ -22,6 +22,8 @@
 
 ## Settings
 `settings.json` - stores the PID parameters for the machine and the different engine profiles. To change the settings, edit the file and restart the program.
+
+![Settings](assets/settings.png)
 
 ### PID parameters
 The PID parameters can be changed to alter the behavior of the heating loop. 
