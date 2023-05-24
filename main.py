@@ -3,8 +3,7 @@ import tkinter as tk
 import json
 from serial.tools import list_ports
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
-NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 import numpy as np
 from tkinter.ttk import *
 from tkinter import messagebox
