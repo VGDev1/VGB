@@ -1,3 +1,4 @@
+from datetime import timedelta
 import tkinter as tk
 import json
 from serial.tools import list_ports
@@ -58,10 +59,14 @@ class GUI:
             temps.clear()
             speeds.clear()
 
-        with open("profiles.json", "r") as read_file:
+        with open("settings.json", "r") as read_file:
             data = json.load(read_file)
 
         engines = data["engines"]
+        Kp = data["Kp"]
+        Ki = data["Ki"]
+        Kd = data["Kd"]
+        # TODO add these in arduino code.
 
         engineNames = list(map(lambda x: x["Name"] , engines))
 
@@ -134,6 +139,8 @@ class GUI:
             plt1.title.set_text('Temperatures')
             plt2.title.set_text('Speeds')
 
+            # get total time as label
+
             x = getTimes()
 
             # create new list where each element is the sum of the previous elements
@@ -166,6 +173,15 @@ class GUI:
 
             canvas2.get_tk_widget().grid(row=4, column=5, columnspan=5 ,sticky="nsew")
             canvas2.get_tk_widget().grid_rowconfigure(4, weight=1)
+
+            # sum of all times total time in hours and minutes
+            total_time_minutes = x[-1]
+            # string format ex: 3 hours and 30 minutes
+            hours = int(total_time_minutes / 60)
+            minutes = int(total_time_minutes % 60)
+            # show total time in a label below charts, text in the middle bold and big
+            tk.Label(master, text="Total time: " + str(hours) + " hours & " + str(minutes) + " minutes", font=("Arial Bold", 20)).grid(row=5, columnspan=10)
+
 
         tk.Button(master, text="Analyze", command=plot, width=8).grid(row =3, column=6)
 

@@ -9,7 +9,7 @@
 #define SCREEN_HEIGHT 32
 
 #define HEATER_RELAY_PIN 11
-#define PROG_BTN_PIN 16
+#define PROG_BTN_PIN 8
 
 #define slaveAddress 9
 
@@ -53,7 +53,7 @@ int currentSpeed = 0;
 
 // Time values
 int nbrOfSequences = 3;
-int long times[] = { 5, 10, 15 };
+int long times[] = { 2, 4, 6 };
 int long temperatures[] = { 60, 70, 80 };
 int long speeds[] = { 200, 500, 800 };
 
@@ -72,7 +72,10 @@ void setup() {
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(2);  // Increase text size
-  display.println("test2");
+  display.setCursor(0, 0);
+  display.println("Data mode");
+  display.display();
+  delay(1000);
 
   // tell the PID to range between 0 and the full window size
   myPID.SetOutputLimits(0, WindowSize);
@@ -190,10 +193,9 @@ void loop() {
 
   timeSinceStartMinutes = timeSinceStartMillis / minuteInMillis;
 
-  int programmingMode = digitalRead(PROG_BTN_PIN);  // progBtnReading the value of the button and setting progBtnReading
 
-  if (programmingMode == HIGH) {
-    //software_Reset();
+  if (digitalRead(PROG_BTN_PIN) == LOW) {
+    software_Reset();
   }
 
   readTemp();

@@ -1,4 +1,7 @@
 {
+    "Kp": 80,
+    "Ki": 10,
+    "Kd": 450,
     "engines": [
         {
             "Name": "Performa",
