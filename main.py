@@ -18,6 +18,7 @@ os.chdir(dname)
 class GUI:
 
     def __init__(self) -> None:
+
         master = tk.Tk()
 
         master.title("VG Break In System")
