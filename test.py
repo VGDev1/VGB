@@ -1,43 +1,38 @@
-import matplotlib.pyplot as plt
-from datetime import timedelta
 import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Example data
 data = {
     "times": [20, 10, 10, 10, 30, 40, 30],
     "temps": [95, 95, 95, 90, 60, 85, 80],
     "speeds": [0, 200, 300, 400, 400, 510, 510]
 }
 
-# Calculate cumulative sum of times and convert to hour timestamps
-timestamps = [sum(data["times"][:i]) / 60 for i in range(1, len(data["times"]) + 1)]  # Convert to hours
+class Timeline(tk.Canvas):
+    def __init__(self, master, data, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.data = data
+        self.width = self.winfo_reqwidth()
+        self.height = self.winfo_reqheight()
+        self.draw_timeline()
 
-# Create the plot
-fig, ax1 = plt.subplots()
-ax2 = ax1.twinx()
-ax1.plot(timestamps, data["temps"], 'r-', label='Temperature')
-ax2.plot(timestamps, data["speeds"], 'b-', label='Speed')
+    def draw_timeline(self):
+        num_points = len(self.data["times"])
+        x_spacing = self.width / num_points
 
-# Set labels and title
-ax1.set_xlabel('Time (hours)')
-ax1.set_ylabel('Temperature')
-ax2.set_ylabel('Speed')
-plt.title('Temperature and Speed')
+        for i, time in enumerate(self.data["times"]):
+            x = i * x_spacing
 
-# Add legends
-lines, labels = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax2.legend(lines + lines2, labels + labels2, loc='best')
+            # Draw timestamp below the point
+            self.create_text(x, self.height + 10, text=str(time), anchor="n")
 
-# Create a Tkinter window
+            # Draw speed and temp above the point
+            temp = self.data["temps"][i]
+            speed = self.data["speeds"][i]
+            self.create_text(x, self.height - 20, text=f"Temp: {temp}\nSpeed: {speed}", anchor="s")
+
 root = tk.Tk()
-root.title("Data Plot")
+root.geometry("500x300")
 
-# Create a Tkinter canvas
-canvas = FigureCanvasTkAgg(fig, master=root)
-canvas.draw()
-canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+timeline = Timeline(root, data)
+timeline.pack(fill="both", expand=True)
 
-# Run the Tkinter event loop
-tk.mainloop()
+root.mainloop()

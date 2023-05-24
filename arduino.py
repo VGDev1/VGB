@@ -11,7 +11,6 @@ def placeValuesInIno(times, temps, speeds, Kp, Ki, Kd):
     #remove old output file and create new one
     fout = open("VBISU/VBISU.ino", "wt")
 
-    # extract times, temps and speeds from the list of tk.Entry objects
     times = list(map(lambda x: int(x.get()), times))
     temps = list(map(lambda x: int(x.get()), temps))
     speeds = list(map(lambda x: int(x.get()), speeds))
@@ -20,23 +19,15 @@ def placeValuesInIno(times, temps, speeds, Kp, Ki, Kd):
 
     for i in range(1, len(ts)):
         ts[i] = ts[i-1] + ts[i]
-    # replace tms with the times, on format {time1, time2} from the times list, and so on. do for temps and speeds as well
-    for line in fin:
-        fout.write(line.replace('tms', str(ts).replace('[', '{').replace(']', '}')).replace('tmps', str(temps).replace('[', '{').replace(']', '}')).replace('spds', str(speeds).replace('[', '{').replace(']', '}')).replace('seq', str(len(ts))))
 
-    # replace ParKP, ParKI and ParKD with the values from the Kp, Ki and Kd
     for line in fin:
-        fout.write(line.replace('ParKP', str(Kp)).replace('ParKI', str(Ki)).replace('ParKD', str(Kd)))
+        fout.write(line.replace('ParTimes', str(ts).replace('[', '{').replace(']', '}')).replace('ParTemps', str(temps).replace('[', '{').replace(']', '}')).replace('ParSpeeds', str(speeds).replace('[', '{').replace(']', '}')).replace('ParNbrOfSequences', str(len(ts))).replace('ParKp', str(Kp)).replace('ParKi', str(Ki)).replace('ParKd', str(Kd)))
     
-    
-    #close input and output files
     fin.close()
     fout.close()
 
 def compileCode(port):
     print(port)
-    # use arduino-cli to install #include <Adafruit_MAX31865.h> include <LiquidCrystal.h>  include <PID_v1.h> include <Wire.h>
-
     subprocess.call(["arduino-cli", "lib", "install", "Adafruit BusIO"])
     subprocess.call(["arduino-cli", "lib", "install", "PID"])
     subprocess.call(["arduino-cli", "lib", "install", "OneWire"])

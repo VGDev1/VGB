@@ -11,21 +11,19 @@ from tkinter import messagebox
 from arduino import *
 import time
 
-
-
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 class GUI:
 
     def __init__(self) -> None:
         master = tk.Tk()
 
-        # set title of window to VG Break In System
         master.title("VG Break In System")
 
         tk.Label(master, text="Times").grid(row=0, columnspan=1)
-
         tk.Label(master, text="Temps").grid(row=1, columnspan=1)
-
         tk.Label(master, text="Speeds").grid(row=2, columnspan=1)
 
         times = []
@@ -46,15 +44,12 @@ class GUI:
                 spe.grid(row=2, column=i+1)
                 speeds.append(spe)
 
-        # remove last column of times
         def removeGridEntrys():
-            # grid forget all times speeds and temps
             for i in range(0, len(times)):
                 times[i].grid_forget()
                 temps[i].grid_forget()
                 speeds[i].grid_forget()
 
-            # clear lists
             times.clear()
             temps.clear()
             speeds.clear()
@@ -66,7 +61,6 @@ class GUI:
         Kp = data["Kp"]
         Ki = data["Ki"]
         Kd = data["Kd"]
-        # TODO add these in arduino code.
 
         engineNames = list(map(lambda x: x["Name"] , engines))
 
@@ -81,6 +75,7 @@ class GUI:
             entry.insert(0, text)
 
         def loadProfile():
+            clearFields()
             engineModel = selectedEngine.get()
             for e in engines:
                 if e["Name"] == engineModel:
@@ -88,7 +83,6 @@ class GUI:
                     tempsList = e["temps"] 
                     speedsList = e["speeds"] 
 
-            removeGridEntrys()
             createGridEntrys(len(timesList))
                     
             for i in range(0, len(timesList)):
@@ -103,11 +97,12 @@ class GUI:
                 setTextInput("", speeds[i]) 
             
             removeGridEntrys()
+                
+
 
         tk.Button(master, text="Load Profile", command=loadProfile).grid(row =3, column=2)
 
-        tk.Button(master, text="Clear fields", command=clearFields).grid(row =3, column=3)
-
+        tk.Button(master, text="Clear", command=clearFields).grid(row =3, column=3)
 
         selectedComPort = tk.StringVar(master)
 
@@ -147,10 +142,6 @@ class GUI:
             for i in range(1, len(x)):
                 x[i] = x[i-1] + x[i]
 
-
-            print("printar x")
-            print(x)
-
             plt1.plot(np.array(x), np.array(getTemps()))
             plt1.set_xlabel('Time (min)')
             plt1.set_ylabel('Temperature (C)')
@@ -179,8 +170,13 @@ class GUI:
             # string format ex: 3 hours and 30 minutes
             hours = int(total_time_minutes / 60)
             minutes = int(total_time_minutes % 60)
+
+            # show the following tkinter label, Max temp: xx, Min temp: xx, Max speed: xx, Min speed: xx
+
+            tk.Label(master, text="Max temp: " + str(max(getTemps())) + "C & Min temp: " + str(min(getTemps())) + "C" + "\nMax speed: " + str(max(getSpeeds())) + "rpm & Min speed: " + str(min(getSpeeds())) + "rpm", font=("Arial Bold", 12)).grid(row=5, columnspan=10)
+
             # show total time in a label below charts, text in the middle bold and big
-            tk.Label(master, text="Total time: " + str(hours) + " hours & " + str(minutes) + " minutes", font=("Arial Bold", 20)).grid(row=5, columnspan=10)
+            tk.Label(master, text="Total time: " + str(hours) + " hours & " + str(minutes) + " minutes", font=("Arial Bold", 20)).grid(row=6, columnspan=10)
 
 
         tk.Button(master, text="Analyze", command=plot, width=8).grid(row =3, column=6)
@@ -198,8 +194,8 @@ class GUI:
                 messagebox.showerror("showerror", "Error: Select comport!")
                 return
             
-            placeValuesInIno(times, temps, speeds)
-            compileCode(selectedComPort.get())
+            placeValuesInIno(times, temps, speeds, Kp, Ki, Kd)
+            #compileCode(selectedComPort.get())
             time.sleep(10)
             # update progressbar to 100 over 20 seconds using timer
             messagebox.showinfo(title="Complete", message="Upload complete")
