@@ -2,11 +2,15 @@
 #include <Wire.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include <U8g2lib.h>
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 32
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
 
 #define HEATER_RELAY_PIN 11
 #define PROG_BTN_PIN 8
@@ -19,7 +23,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 
 DallasTemperature sensors(&oneWire);
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
 
 const int numOutputs = 4;
 
@@ -35,8 +39,10 @@ unsigned long windowStartTime;
 
 int maxSpeed = 3000;
 
+boolean heating = false;
+
 unsigned long previousMillis = 0;
-unsigned long interval = 1000;  // Change word every 1 second
+unsigned long interval = 5000;  // Change word every 1 second
 
 // Calc variables
 // Startbutton
@@ -53,7 +59,7 @@ int currentSpeed = 0;
 
 // Time values
 int nbrOfSequences = 3;
-int long times[] = { 2, 4, 6 };
+int long times[] = { 2, 3,4 };
 int long temperatures[] = { 60, 70, 80 };
 int long speeds[] = { 200, 500, 800 };
 
@@ -68,14 +74,13 @@ void setup() {
   // initialize the variables we're linked to
   Setpoint = 0;
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Initialize with the I2C address of your display
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(2);  // Increase text size
-  display.setCursor(0, 0);
-  display.println("Data mode");
-  display.display();
-  delay(1000);
+  u8x8.begin();
+  u8x8.setPowerSave(0);
+
+  u8x8.setFont(u8x8_font_7x14B_1x2_f);
+  u8x8.setCursor(0, 2);
+  u8x8.print("Data mode");
+
 
   // tell the PID to range between 0 and the full window size
   myPID.SetOutputLimits(0, WindowSize);
@@ -88,16 +93,27 @@ void setup() {
   Wire.begin();
 }
 
-void setCursor(int wordLength) {
-  int16_t x = (SCREEN_WIDTH - (wordLength * 12)) / 2;  // Calculate the x-coordinate for centering the text
-  int16_t y = (SCREEN_HEIGHT - 16) / 2;                // Calculate the y-coordinate for centering the text
-
-  display.setCursor(0, 0);
-}
-
 void printToOled() {
   static int currentOutput = 1;
-  display.clearDisplay();                           // Calculate the y-coordinate for centering the text
+
+  int remaining = times[nbrOfSequences-1] - timeSinceStartMinutes;
+  // log setpoint, Input, setSpeed, remaning and print in serial monitor
+  Serial.println("log");
+  Serial.print("Output: ");
+  Serial.print(Output);
+  Serial.print("Setpoint: ");
+  Serial.print(static_cast<int>(Setpoint));
+  Serial.print(" Input: ");
+  Serial.print(static_cast<int>(Input));
+  Serial.print(" SetSpeed: ");
+  Serial.print(setSpeed);
+  Serial.print(" Remaining: ");
+  Serial.println(remaining);
+  Serial.println("currentOutput: ");
+  Serial.println(currentOutput);
+
+  
+                         // Calculate the y-coordinate for centering the text
 
   String outputString = "";
 
@@ -113,17 +129,20 @@ void printToOled() {
       outputString =  (String) "Set temp: " + static_cast<int>(Setpoint) + (String) "c";
       break;
     case 4:
-      int remaining = times[nbrOfSequences-1] - timeSinceStartMinutes;
       outputString = (String) "Remaining:" + remaining + (String) "min";
       break;
     default:
       break;
   }
 
+  Serial.println(outputString);
   // Display the output
-  display.setCursor(0, 0);
-  display.println(outputString);
-  display.display();
+  u8x8.clear();
+  u8x8.setCursor(0, 2);
+  if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
+  u8x8.print(outputString.c_str());
+  if(heating) digitalWrite(HEATER_RELAY_PIN, HIGH);
+  Serial.print("did not lockup on " + outputString + "\n");
 
   // Increment current output index
   currentOutput = (currentOutput % numOutputs) + 1;
@@ -134,19 +153,25 @@ void heaterLoop() {
     // time to shift the Relay Window
     windowStartTime += WindowSize;
   }
-  if (Output > millis() - windowStartTime) digitalWrite(HEATER_RELAY_PIN, HIGH);
+  if (Output > millis() - windowStartTime) {
+        digitalWrite(HEATER_RELAY_PIN, HIGH);
+        heating = true;
+  }
   else digitalWrite(HEATER_RELAY_PIN, LOW);
+  heating = false;
 }
 
 void sendSpeed() {
 
   if (currentSpeed != setSpeed) {
+    if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
     Wire.beginTransmission(slaveAddress);  // transmit to device #9
     // map the speed to a value between 0 and 255
     int speed = map(setSpeed, 0, maxSpeed, 0, 255);
     Wire.write(speed);       // sends x
     Wire.endTransmission();  // stop transmitting
     currentSpeed = setSpeed;
+    if(heating) digitalWrite(HEATER_RELAY_PIN, HIGH);
   }
 }
 
@@ -175,11 +200,10 @@ void finished() {
       setSpeed = 0;
       sendSpeed();
       digitalWrite(HEATER_RELAY_PIN, LOW);
-      display.clearDisplay();
-        String outputString = "Finished";
-        setCursor(outputString.length());
-        display.println(outputString);
-        display.display();
+      String outputString = "Finished";
+      u8x8.clear();
+      u8x8.setCursor(0, 2);
+      u8x8.print(outputString.c_str());
 
       delay(1000);
 }
@@ -225,7 +249,8 @@ void loop() {
   Serial.println("Output");
   Serial.println(Output);
 
-  if (timeSinceStartMillis - previousMillis >= interval) {
+  if(Input > 5) {
+      if (timeSinceStartMillis - previousMillis >= interval) {
     previousMillis = timeSinceStartMillis;
     printToOled();
     Serial.println("second");
@@ -234,4 +259,5 @@ void loop() {
   myPID.Compute();
   heaterLoop();
   Serial.println("running");
+  }
 }
