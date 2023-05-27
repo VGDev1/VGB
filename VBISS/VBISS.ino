@@ -92,8 +92,12 @@ void setup() {
 
   Wire.begin();
 
-  setSpeed = 0;
-  sendSpeed();
+  Wire.beginTransmission(slaveAddress);  // transmit to device #9
+  // map the speed to a value between 0 and 255
+  Wire.write(0);       // sends x
+  Wire.endTransmission();  // stop transmitting
+
+  delay(1000);
 }
 
 void printToOled() {

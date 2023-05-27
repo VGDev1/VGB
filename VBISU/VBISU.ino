@@ -61,7 +61,7 @@ int currentSpeed = 0;
 int nbrOfSequences = 4;
 int long times[] = {5, 10, 15, 20};
 int long temperatures[] = {65, 75, 85, 95};
-int long speeds[] = {100, 400, 800, 1000};
+int long speeds[] = {1000, 1500, 1500, 2000};
 
 void setup() {
 
@@ -92,8 +92,12 @@ void setup() {
 
   Wire.begin();
 
-  setSpeed = 0;
-  sendSpeed();
+  Wire.beginTransmission(slaveAddress);  // transmit to device #9
+  // map the speed to a value between 0 and 255
+  Wire.write(0);       // sends x
+  Wire.endTransmission();  // stop transmitting
+
+  delay(1000);
 }
 
 void printToOled() {
