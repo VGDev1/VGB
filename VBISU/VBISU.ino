@@ -42,7 +42,7 @@ int maxSpeed = 3000;
 boolean heating = false;
 
 unsigned long previousMillis = 0;
-unsigned long interval = 5000;  // Change word every 1 second
+unsigned long interval = 1000;  // Change word every 1 second
 
 // Calc variables
 // Startbutton
@@ -61,7 +61,7 @@ int currentSpeed = 0;
 int nbrOfSequences = 4;
 int long times[] = {5, 10, 15, 20};
 int long temperatures[] = {65, 75, 85, 95};
-int long speeds[] = {0, 200, 500, 800};
+int long speeds[] = {100, 400, 800, 1000};
 
 void setup() {
 
@@ -140,9 +140,9 @@ void printToOled() {
 
   Serial.println(outputString);
   // Display the output
+  if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
   u8x8.clear();
   u8x8.setCursor(0, 2);
-  if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
   u8x8.print(outputString.c_str());
   if(heating) digitalWrite(HEATER_RELAY_PIN, HIGH);
   Serial.print("did not lockup on " + outputString + "\n");
