@@ -32,7 +32,6 @@ def compileCode(port):
     subprocess.call(["arduino-cli", "lib", "install", "PID"])
     subprocess.call(["arduino-cli", "lib", "install", "OneWire"])
     subprocess.call(["arduino-cli", "lib", "install", "DallasTemperature"])
-    subprocess.call(["arduino-cli", "lib", "install", "Adafruit GFX Library"])
-    subprocess.call(["arduino-cli", "lib", "install", "Adafruit SSD1306"])
+    subprocess.call(["arduino-cli", "lib", "install", "U8g2"])
     subprocess.call(["arduino-cli", "compile", "--fqbn", "arduino:avr:uno", "VBISU/VBISU.ino"])
     subprocess.call(["arduino-cli", "upload", "-p", port, "--fqbn", "arduino:avr:uno", "VBISU/VBISU.ino"])

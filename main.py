@@ -195,8 +195,8 @@ class GUI:
                 return
             
             placeValuesInIno(times, temps, speeds, Kp, Ki, Kd)
-            #compileCode(selectedComPort.get())
-            time.sleep(10)
+            compileCode(selectedComPort.get().split(" ")[0])
+            #time.sleep(10)
             # update progressbar to 100 over 20 seconds using timer
             messagebox.showinfo(title="Complete", message="Upload complete")
             return
