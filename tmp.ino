@@ -31,7 +31,7 @@ const int numOutputs = 4;
 double Setpoint, Input, Output;
 
 // Specify the links and initial tuning parameters
-double Kp = 80, Ki = 10, Kd = 450;
+double Kp = ParKp, Ki = ParKi, Kd = ParKd;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 int WindowSize = 2000;
@@ -58,18 +58,16 @@ int setSpeed;
 int currentSpeed = 0;
 
 // Time values
-int nbrOfSequences = 4;
-int long times[] = {5, 10, 15, 20};
-int long temperatures[] = {65, 75, 85, 95};
-int long speeds[] = {1000, 1500, 1500, 2000};
+int nbrOfSequences = ParNbrOfSequences;
+int long times[] = ParTimes;
+int long temperatures[] = ParTemps;
+int long speeds[] = ParSpeeds;
 
 unsigned long heatingStartTime = 0;
 unsigned long heatingTime = 0;
 float startTemp = 0.0;
 bool isHeating = false;
 
-unsigned long lastTempUpdate = 0;
-unsigned long lastMinuteMark = 0;
 
 void setup()
 {
@@ -104,8 +102,6 @@ void setup()
   // map the speed to a value between 0 and 255
   Wire.write(0);          // sends x
   Wire.endTransmission(); // stop transmitting
-
-  startTemp = sensors.getTempCByIndex(0);
 
   delay(1000);
 }
@@ -151,29 +147,20 @@ void printToOled()
   currentOutput = (currentOutput % numOutputs) + 1;
 }
 
-void heaterLoop()
-{
-  if (millis() - windowStartTime > WindowSize)
-  {
+void heaterLoop() {
+  if (millis() - windowStartTime > WindowSize) {
     // time to shift the Relay Window
     windowStartTime += WindowSize;
   }
-
-  if (Output - 500 > millis() - windowStartTime)
-  {
-    if (!isHeating)
-    {
+  
+  if (Output > millis() - windowStartTime) {
+    if (!isHeating) {
       heatingStartTime = millis();
       isHeating = true;
     }
     digitalWrite(HEATER_RELAY_PIN, HIGH);
-  }
-  else
-  {
-    Serial.print("heater off");
-    if (isHeating)
-    {
-      Serial.println("here ");
+  } else {
+    if (isHeating) {
       heatingTime += millis() - heatingStartTime;
       isHeating = false;
     }
@@ -181,24 +168,16 @@ void heaterLoop()
   }
 }
 
-void checkHeaterIssue()
-{
-  Serial.println("Checking heater issue");
-  Serial.println(heatingTime);
-  Serial.println("Start temp: ");
-  Serial.println(startTemp);
-  if (heatingTime > 0.5 * minuteInMillis)
-  {
-    if (Input <= startTemp && Input > 5 && Input < 115)
-    {
-      while (true)
-      {
+void checkHeaterIssue() {
+  if (heatingTime > 0.75 * minuteInMillis) {
+    if (Input <= startTemp) {
+      while(true) {
         u8x8.clear();
         u8x8.setCursor(0, 2);
         u8x8.print("Heater Issue");
-        digitalWrite(HEATER_RELAY_PIN, LOW); // Turn off the heater
         setSpeed = 0;
         sendSpeed();
+        digitalWrite(HEATER_RELAY_PIN, LOW); // Turn off the heater
         delay(1000);
       }
     }
@@ -241,56 +220,17 @@ void software_Reset() // Restarts program from beginning but does not reset the 
 }
 
 void readTemp() {
-  static float tempReadings[30];
-  static int currentIndex = 0;
-  static unsigned long lastTempUpdate = 0;
-
-  unsigned long currentTime = millis();
-
-  if (currentTime - lastTempUpdate >= 1000) {
-    sensors.requestTemperatures();
-    float currentTemp = sensors.getTempCByIndex(0);
-
-    tempReadings[currentIndex] = currentTemp;
-    currentIndex = (currentIndex + 1) % 30;
-
-    bool isOutOfRange = true;
-    for (int i = 0; i < 30; i++) {
-      if (tempReadings[i] >= 10 && tempReadings[i] <= 115) {
-        isOutOfRange = false;
-        break;
-      }
-    }
-
-    if (isOutOfRange) {
-      // Temperature consistently out of range for 30 seconds
-      while (true) {
-        u8x8.clear();
-        u8x8.setCursor(0, 2);
-        u8x8.print("Temp Sensor Fault");
-        digitalWrite(HEATER_RELAY_PIN, LOW); // Turn off the heater
-        setSpeed = 0;
-        sendSpeed();
-        delay(1000);
-      }
-    }
-
-    lastTempUpdate = currentTime;
-  }
-
   sensors.requestTemperatures();
   Input = sensors.getTempCByIndex(0);
-
-  if (currentTime - lastMinuteMark >= minuteInMillis)
-  {
+  
+  if (timeSinceStartMillis % minuteInMillis == 0) {
     startTemp = Input;
     heatingTime = 0;
-
-    lastMinuteMark = currentTime;
   }
-
+  
   checkHeaterIssue();
 }
+
 
 void finished()
 {
@@ -334,13 +274,14 @@ void loop()
   setSpeed = speeds[currentSequence];
   sendSpeed();
 
-  if (Input > 5 && Input < 115)
+  if (Input > 5)
   { // check if temp sensor is connected and working
     if (timeSinceStartMillis - previousMillis >= interval)
     {
       previousMillis = timeSinceStartMillis;
       printToOled();
     }
+
     myPID.Compute();
     heaterLoop();
   }
