@@ -137,7 +137,6 @@ void printToOled()
     break;
   }
 
-  Serial.println(outputString);
   if (heating)
     digitalWrite(HEATER_RELAY_PIN, LOW);
   u8x8.clear();
@@ -145,7 +144,6 @@ void printToOled()
   u8x8.print(outputString.c_str());
   if (heating)
     digitalWrite(HEATER_RELAY_PIN, HIGH);
-  Serial.print("did not lockup on " + outputString + "\n");
 
   // Increment current output index
   currentOutput = (currentOutput % numOutputs) + 1;
@@ -170,10 +168,8 @@ void heaterLoop()
   }
   else
   {
-    Serial.print("heater off");
     if (isHeating)
     {
-      Serial.println("here ");
       heatingTime += millis() - heatingStartTime;
       isHeating = false;
     }
@@ -183,10 +179,6 @@ void heaterLoop()
 
 void checkHeaterIssue()
 {
-  Serial.println("Checking heater issue");
-  Serial.println(heatingTime);
-  Serial.println("Start temp: ");
-  Serial.println(startTemp);
   if (heatingTime > 0.5 * minuteInMillis)
   {
     if (Input <= startTemp && Input > 5 && Input < 115)
