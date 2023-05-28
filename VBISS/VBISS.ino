@@ -23,7 +23,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 
 DallasTemperature sensors(&oneWire);
 
-U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
+U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(/* reset=*/U8X8_PIN_NONE);
 
 const int numOutputs = 4;
 
@@ -42,13 +42,13 @@ int maxSpeed = 3000;
 boolean heating = false;
 
 unsigned long previousMillis = 0;
-unsigned long interval = 1000;  // Change word every 1 second
+unsigned long interval = 1000; // Change word every 1 second
 
 // Calc variables
 // Startbutton
-long debounce = 200;  // the debounce time, increase if the output flickers
+long debounce = 200; // the debounce time, increase if the output flickers
 // Time variables
-unsigned long timeSinceStartMillis;  // Veriable to use with millis to keep count on the sequences
+unsigned long timeSinceStartMillis; // Veriable to use with millis to keep count on the sequences
 unsigned long timeSinceStartMinutes;
 
 unsigned int minuteInMillis = 60000;
@@ -63,10 +63,11 @@ int long times[] = ParTimes;
 int long temperatures[] = ParTemps;
 int long speeds[] = ParSpeeds;
 
-void setup() {
+void setup()
+{
 
   Serial.begin(9600);
-  pinMode(PROG_BTN_PIN, INPUT_PULLUP);  // Inpin till startknappen
+  pinMode(PROG_BTN_PIN, INPUT_PULLUP); // Inpin till startknappen
 
   pinMode(HEATER_RELAY_PIN, OUTPUT);
   digitalWrite(HEATER_RELAY_PIN, LOW);
@@ -81,7 +82,6 @@ void setup() {
   u8x8.setCursor(0, 2);
   u8x8.print("Data mode");
 
-
   // tell the PID to range between 0 and the full window size
   myPID.SetOutputLimits(0, WindowSize);
 
@@ -92,140 +92,136 @@ void setup() {
 
   Wire.begin();
 
-  Wire.beginTransmission(slaveAddress);  // transmit to device #9
+  Wire.beginTransmission(slaveAddress); // transmit to device #9
   // map the speed to a value between 0 and 255
-  Wire.write(0);       // sends x
-  Wire.endTransmission();  // stop transmitting
+  Wire.write(0);          // sends x
+  Wire.endTransmission(); // stop transmitting
 
   delay(1000);
 }
 
-void printToOled() {
+void printToOled()
+{
   static int currentOutput = 1;
 
-  int remaining = times[nbrOfSequences-1] - timeSinceStartMinutes;
-  // log setpoint, Input, setSpeed, remaning and print in serial monitor
-  Serial.println("log");
-  Serial.print("Output: ");
-  Serial.print(Output);
-  Serial.print("Setpoint: ");
-  Serial.print(static_cast<int>(Setpoint));
-  Serial.print(" Input: ");
-  Serial.print(static_cast<int>(Input));
-  Serial.print(" SetSpeed: ");
-  Serial.print(setSpeed);
-  Serial.print(" Remaining: ");
-  Serial.println(remaining);
-  Serial.println("currentOutput: ");
-  Serial.println(currentOutput);
-
-  
-                         // Calculate the y-coordinate for centering the text
+  int remaining = times[nbrOfSequences - 1] - timeSinceStartMinutes;
 
   String outputString = "";
 
   // Display the corresponding output based on the current value
-  switch (currentOutput) {
-    case 1:
-      outputString = (String) "Speed: " + setSpeed;
-      break;
-    case 2:
-      outputString = (String) "Temp: " + static_cast<int>(Input) + (String) "c";
-      break;
-    case 3:
-      outputString =  (String) "Set temp: " + static_cast<int>(Setpoint) + (String) "c";
-      break;
-    case 4:
-      outputString = (String) "Remaining:" + remaining + (String) "min";
-      break;
-    default:
-      break;
+  switch (currentOutput)
+  {
+  case 1:
+    outputString = (String) "Speed: " + setSpeed;
+    break;
+  case 2:
+    outputString = (String) "Temp: " + static_cast<int>(Input) + (String) "c";
+    break;
+  case 3:
+    outputString = (String) "Set temp: " + static_cast<int>(Setpoint) + (String) "c";
+    break;
+  case 4:
+    outputString = (String) "Remaining:" + remaining + (String) "min";
+    break;
+  default:
+    break;
   }
 
   Serial.println(outputString);
-  // Display the output
-  if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
+  if (heating)
+    digitalWrite(HEATER_RELAY_PIN, LOW);
   u8x8.clear();
   u8x8.setCursor(0, 2);
   u8x8.print(outputString.c_str());
-  if(heating) digitalWrite(HEATER_RELAY_PIN, HIGH);
+  if (heating)
+    digitalWrite(HEATER_RELAY_PIN, HIGH);
   Serial.print("did not lockup on " + outputString + "\n");
 
   // Increment current output index
   currentOutput = (currentOutput % numOutputs) + 1;
 }
 
-void heaterLoop() {
-  if (millis() - windowStartTime > WindowSize) {
+void heaterLoop()
+{
+  if (millis() - windowStartTime > WindowSize)
+  {
     // time to shift the Relay Window
     windowStartTime += WindowSize;
   }
-  if (Output > millis() - windowStartTime) {
-        digitalWrite(HEATER_RELAY_PIN, HIGH);
-        heating = true;
+  if (Output > millis() - windowStartTime)
+  {
+    digitalWrite(HEATER_RELAY_PIN, HIGH);
+    heating = true;
   }
-  else digitalWrite(HEATER_RELAY_PIN, LOW);
+  else
+    digitalWrite(HEATER_RELAY_PIN, LOW);
   heating = false;
 }
 
-void sendSpeed() {
+void sendSpeed()
+{
 
-  if (currentSpeed != setSpeed) {
-    if(heating) digitalWrite(HEATER_RELAY_PIN, LOW);
-    Wire.beginTransmission(slaveAddress);  // transmit to device #9
+  if (currentSpeed != setSpeed)
+  {
+    if (heating)
+      digitalWrite(HEATER_RELAY_PIN, LOW);
+    Wire.beginTransmission(slaveAddress); // transmit to device #9
     // map the speed to a value between 0 and 255
     int speed = map(setSpeed, 0, maxSpeed, 0, 255);
-    Wire.write(speed);       // sends x
-    Wire.endTransmission();  // stop transmitting
+    Wire.write(speed);      // sends x
+    Wire.endTransmission(); // stop transmitting
     currentSpeed = setSpeed;
-    if(heating) digitalWrite(HEATER_RELAY_PIN, HIGH);
+    if (heating)
+      digitalWrite(HEATER_RELAY_PIN, HIGH);
   }
 }
 
-int sequenceNumber(int time) {
-  for (int i = 0; i < nbrOfSequences; i++) {
-    if (timeSinceStartMinutes < times[i]) {
+int sequenceNumber(int time)
+{
+  for (int i = 0; i < nbrOfSequences; i++)
+  {
+    if (timeSinceStartMinutes < times[i])
+    {
       return i;
     }
   }
   return -1;
 }
 
-void software_Reset()  // Restarts program from beginning but does not reset the peripherals and registers
+void software_Reset() // Restarts program from beginning but does not reset the peripherals and registers
 {
   asm volatile("  jmp 0");
 }
 
-void readTemp() {
+void readTemp()
+{
   sensors.requestTemperatures();
   Input = sensors.getTempCByIndex(0);
 }
 
-void finished() {
-      Serial.print("done");
-      Setpoint = 0;
-      setSpeed = 0;
-      sendSpeed();
-      digitalWrite(HEATER_RELAY_PIN, LOW);
-      String outputString = "Finished";
-      u8x8.clear();
-      u8x8.setCursor(0, 2);
-      u8x8.print(outputString.c_str());
-
-      delay(1000);
+void finished()
+{
+  Setpoint = 0;
+  setSpeed = 0;
+  sendSpeed();
+  digitalWrite(HEATER_RELAY_PIN, LOW);
+  u8x8.clear();
+  u8x8.setCursor(0, 2);
+  u8x8.print("Finished");
+  delay(1000);
 }
 
-
-void loop() {
-  timeSinceStartMillis = millis();  // Counting millis to minuteInMilliss
+void loop()
+{
+  timeSinceStartMillis = millis(); // Counting millis to minuteInMilliss
 
   Serial.println("timeSinceStartMillis");
   Serial.print(timeSinceStartMillis);
 
   timeSinceStartMinutes = timeSinceStartMillis / minuteInMillis;
 
-
-  if (digitalRead(PROG_BTN_PIN) == LOW) {
+  if (digitalRead(PROG_BTN_PIN) == LOW)
+  {
     software_Reset();
   }
 
@@ -233,8 +229,10 @@ void loop() {
 
   int currentSequence = sequenceNumber(timeSinceStartMinutes);
 
-  if (currentSequence == -1) {
-    while (true) {
+  if (currentSequence == -1)
+  {
+    while (true)
+    {
       finished();
     }
   }
@@ -243,28 +241,15 @@ void loop() {
   setSpeed = speeds[currentSequence];
   sendSpeed();
 
-  Serial.println(setSpeed);
-  Serial.println(timeSinceStartMinutes);
+  if (Input > 5)
+  { // check if temp sensor is connected and working
+    if (timeSinceStartMillis - previousMillis >= interval)
+    {
+      previousMillis = timeSinceStartMillis;
+      printToOled();
+    }
 
-  Serial.println("sequence");
-  Serial.println(currentSequence);
-
-
-  Serial.println("Input");
-  Serial.println(Input);
-
-  Serial.println("Output");
-  Serial.println(Output);
-
-  if(Input > 5) {
-      if (timeSinceStartMillis - previousMillis >= interval) {
-    previousMillis = timeSinceStartMillis;
-    printToOled();
-    Serial.println("second");
-  }
-
-  myPID.Compute();
-  heaterLoop();
-  Serial.println("running");
+    myPID.Compute();
+    heaterLoop();
   }
 }

@@ -61,7 +61,7 @@ int currentSpeed = 0;
 int nbrOfSequences = 4;
 int long times[] = {5, 10, 15, 20};
 int long temperatures[] = {65, 75, 85, 95};
-int long speeds[] = {1000, 1500, 1500, 2000};
+int long speeds[] = {50, 1500, 1500, 2000};
 
 void setup() {
 
