@@ -187,7 +187,9 @@ void checkHeaterIssue()
   Serial.println(heatingTime);
   Serial.println("Start temp: ");
   Serial.println(startTemp);
-  if (heatingTime > 0.5 * minuteInMillis)
+  Serial.println("input");
+  Serial.println(Input);
+  if (heatingTime > 0.5 * minuteInMillis*2)
   {
     if (Input <= startTemp && Input > 5 && Input < 115)
     {
@@ -281,7 +283,7 @@ void readTemp() {
   sensors.requestTemperatures();
   Input = sensors.getTempCByIndex(0);
 
-  if (currentTime - lastMinuteMark >= minuteInMillis)
+  if (currentTime - lastMinuteMark >= minuteInMillis*2)
   {
     startTemp = Input;
     heatingTime = 0;

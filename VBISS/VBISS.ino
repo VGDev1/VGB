@@ -179,7 +179,7 @@ void heaterLoop()
 
 void checkHeaterIssue()
 {
-  if (heatingTime > 0.5 * minuteInMillis)
+  if (heatingTime > 0.5 * minuteInMillis*2)
   {
     if (Input <= startTemp && Input > 5 && Input < 115)
     {
@@ -273,7 +273,7 @@ void readTemp() {
   sensors.requestTemperatures();
   Input = sensors.getTempCByIndex(0);
 
-  if (currentTime - lastMinuteMark >= minuteInMillis)
+  if (currentTime - lastMinuteMark >= minuteInMillis*2)
   {
     startTemp = Input;
     heatingTime = 0;
