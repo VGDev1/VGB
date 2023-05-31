@@ -179,7 +179,7 @@ void heaterLoop()
 
 void checkHeaterIssue()
 {
-  if (heatingTime > 0.5 * minuteInMillis*2)
+  if (heatingTime > 0.6 * minuteInMillis*2)
   {
     if (Input <= startTemp && Input > 5 && Input < 115)
     {
